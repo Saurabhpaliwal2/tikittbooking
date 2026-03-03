@@ -74,7 +74,6 @@
 
 .main-content {
   flex: 1;
-  padding-top: 2rem;
   padding-bottom: 5rem;
 }
 
@@ -152,6 +151,8 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
   border-radius: 2rem;
   padding: 3px;
+  display: flex;
+  align-items: center;
 }
 
 .dark-theme .input-field label {
@@ -1252,8 +1253,10 @@
 
   .dark-theme .search-box {
     flex-direction: column;
-    padding: 0.5rem;
+    padding: 1rem;
     border-radius: 1.5rem;
+    align-items: center;
+    text-align: center;
   }
 
   .input-field {
