@@ -29,6 +29,18 @@ api.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
+// Add response interceptor to handle auth errors
+api.interceptors.response.use((response) => {
+    return response;
+}, (error) => {
+    if (error.response && error.response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/'; // Optional: force redirect or just let app re-render
+    }
+    return Promise.reject(error);
+});
+
 export const authService = {
     login: (credentials) => api.post('/auth/login', credentials),
     register: (userData) => api.post('/auth/register', userData),
