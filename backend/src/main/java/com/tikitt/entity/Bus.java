@@ -32,6 +32,9 @@ public class Bus {
     private String amenities;
 
     @Column(nullable = false)
+    private Double rating;
+
+    @Column(nullable = false)
     private String operatorName;
 
     public enum BusType {

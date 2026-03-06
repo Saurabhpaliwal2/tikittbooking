@@ -11,8 +11,16 @@ const BookingHistory = () => {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const response = await bookingService.getMyBookings();
-                setBookings(response.data);
+                const user = JSON.parse(localStorage.getItem('user'));
+
+                if (user && user.name === 'Demo User') {
+                    const sessionBookings = JSON.parse(localStorage.getItem('demo_bookings') || '[]');
+                    console.log(`[Demo] Loading ${sessionBookings.length} bookings from session storage`);
+                    setBookings(sessionBookings);
+                } else {
+                    const response = await bookingService.getMyBookings();
+                    setBookings(response.data);
+                }
             } catch (err) {
                 console.error('Error fetching bookings:', err);
                 setError('Failed to load your bookings. Please make sure you are logged in.');

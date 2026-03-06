@@ -18,13 +18,16 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public BookingService(BookingRepository bookingRepository,
             ScheduleRepository scheduleRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            EmailService emailService) {
         this.bookingRepository = bookingRepository;
         this.scheduleRepository = scheduleRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -69,7 +72,13 @@ public class BookingService {
         booking.setPassengerEmail(request.getPassengerEmail());
         booking.setPassengerPhone(request.getPassengerPhone());
 
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        try {
+            emailService.sendBookingConfirmation(savedBooking);
+        } catch (Exception e) {
+            System.err.println("Email failed but booking succeeded: " + e.getMessage());
+        }
+        return savedBooking;
     }
 
     public List<Booking> getMyBookings(String userEmail) {

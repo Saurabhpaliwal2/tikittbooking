@@ -39,11 +39,28 @@ const LoginRegistry = ({ isOpen, onClose, onLoginSuccess }) => {
                 setIsLogin(true);
             }
         } catch (err) {
-            console.error('Auth error:', err);
-            setError(err.response?.data?.message || err.response?.data || 'Authentication failed. Please try again.');
+            console.error('Auth error detailed:', err.response?.data || err.message);
+            const message = err.response?.data?.message || (typeof err.response?.data === 'string' ? err.response.data : null) || 'Authentication failed. Please check your credentials.';
+            setError(message);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDemoLogin = () => {
+        const demoUser = {
+            name: 'Demo User',
+            email: 'demo@example.com',
+            role: 'CUSTOMER'
+        };
+        const demoToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZW1vQGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyfQ.DEMO_TOKEN';
+
+        localStorage.setItem('token', demoToken);
+        localStorage.setItem('user', JSON.stringify(demoUser));
+        setSuccessMsg('Demo login successful! Redirecting...');
+        setTimeout(() => {
+            onLoginSuccess(demoUser);
+        }, 1000);
     };
 
     return (
@@ -63,6 +80,11 @@ const LoginRegistry = ({ isOpen, onClose, onLoginSuccess }) => {
                     <div className="auth-error animate-shake">
                         <AlertCircle size={16} />
                         <span>{error}</span>
+                        {isLogin && (
+                            <button className="btn-text" style={{ fontSize: '0.8rem', marginLeft: 'auto' }} onClick={handleDemoLogin}>
+                                Try Demo?
+                            </button>
+                        )}
                     </div>
                 )}
 

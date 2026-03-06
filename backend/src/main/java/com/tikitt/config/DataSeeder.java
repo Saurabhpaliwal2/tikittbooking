@@ -50,33 +50,44 @@ public class DataSeeder implements CommandLineRunner {
 
         private void seedBuses() {
                 if (busRepository.count() == 0) {
+                        busRepository.save(new Bus(null, "DL01-EX1001", "Express Bus", 40,
+                                        Bus.BusType.AC_SEATER, "Charging Points, AC", 4.2, "Express Travels"));
+                        busRepository.save(new Bus(null, "DL02-CT2002", "City Travels", 35,
+                                        Bus.BusType.NON_AC_SEATER, "Water Bottle, Charging Points", 4.8,
+                                        "City Travels Ltd"));
+                        busRepository.save(new Bus(null, "MH03-NR3003", "Night Rider", 30,
+                                        Bus.BusType.AC_SLEEPER, "Blanket, WiFi, Water Bottle", 4.5,
+                                        "Night Rider Services"));
+                        busRepository.save(new Bus(null, "RJ04-SD4004", "Super Deluxe", 45,
+                                        Bus.BusType.VOLVO_MULTI_AXLE, "WiFi, Snacks, Movies, AC", 4.9, "Deluxe Omni"));
+
+                        // Keeping previous for more variety
                         busRepository.save(new Bus(null, "KA01-AB1234", "Royal Cruiser", 40,
-                                        Bus.BusType.VOLVO_MULTI_AXLE, "WiFi, USB Charging, Movies, AC",
+                                        Bus.BusType.VOLVO_MULTI_AXLE, "WiFi, USB Charging, Movies, AC", 4.0,
                                         "Royal Travels"));
-                        busRepository.save(new Bus(null, "KA02-CD5678", "Orange Express", 45,
-                                        Bus.BusType.AC_SLEEPER, "WiFi, Blanket, Water Bottle", "Orange Travels"));
-                        busRepository.save(new Bus(null, "AP03-EF9012", "ZingBus Premium", 38,
-                                        Bus.BusType.AC_SEATER, "WiFi, Snacks, Charging Points", "ZingBus"));
-                        busRepository.save(new Bus(null, "TN04-GH3456", "Parveen Travels", 54,
-                                        Bus.BusType.NON_AC_SEATER, "Water Bottle, Fan", "Parveen Travels"));
-                        busRepository.save(new Bus(null, "MH05-IJ7890", "VRL Volvo", 40,
-                                        Bus.BusType.VOLVO_MULTI_AXLE, "WiFi, USB Charging, AC, Reclining Seats",
-                                        "VRL Travels"));
-                        busRepository.save(new Bus(null, "KA06-KL2345", "SRS Travels", 36,
-                                        Bus.BusType.AC_SLEEPER, "WiFi, Blanket, Pillow, AC", "SRS Travels"));
+                } else {
+                        // Ensure existing buses have unique ratings
+                        var buses = busRepository.findAll();
+                        double[] ratings = { 4.2, 4.8, 4.5, 4.9, 4.0, 3.8, 4.4 };
+                        for (int i = 0; i < buses.size(); i++) {
+                                Bus b = buses.get(i);
+                                b.setRating(ratings[i % ratings.length]);
+                                busRepository.save(b);
+                        }
                 }
         }
 
         private void seedRoutes() {
                 if (routeRepository.count() == 0) {
+                        routeRepository.save(new Route(null, "Delhi", "Jaipur", 281, "5h 30m"));
+                        routeRepository.save(new Route(null, "Delhi", "Agra", 233, "4h 00m"));
+                        routeRepository.save(new Route(null, "Mumbai", "Pune", 148, "3h 00m"));
+                        routeRepository.save(new Route(null, "Jaipur", "Udaipur", 394, "7h 00m"));
+
                         routeRepository.save(new Route(null, "Hyderabad", "Bangalore", 570, "8h 30m"));
                         routeRepository.save(new Route(null, "Bangalore", "Hyderabad", 570, "8h 30m"));
-                        routeRepository.save(new Route(null, "Mumbai", "Pune", 148, "3h 00m"));
-                        routeRepository.save(new Route(null, "Pune", "Mumbai", 148, "3h 00m"));
                         routeRepository.save(new Route(null, "Chennai", "Bangalore", 346, "5h 30m"));
                         routeRepository.save(new Route(null, "Bangalore", "Chennai", 346, "5h 30m"));
-                        routeRepository.save(new Route(null, "Delhi", "Agra", 233, "4h 00m"));
-                        routeRepository.save(new Route(null, "Hyderabad", "Chennai", 630, "9h 00m"));
                 }
         }
 

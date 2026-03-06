@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { History, User, LogIn, LogOut, Bus as BusIcon, Loader2 } from 'lucide-react';
+import { History, User, LogIn, LogOut, Bus as BusIcon, Loader2, MapPin } from 'lucide-react';
 import { busService, bookingService } from './services/api';
 import BusSearch from './components/BusSearch';
 import BusCard from './components/BusCard';
@@ -8,10 +8,14 @@ import SeatSelection from './components/SeatSelection';
 import PassengerForm from './components/PassengerForm';
 import PaymentScreen from './components/PaymentScreen';
 import BookingHistory from './components/BookingHistory';
+import LiveTracking from './components/LiveTracking';
+import BusFilters from './components/BusFilters';
 import LoginRegistry from './components/LoginRegistry';
 import './App.css';
+import { useToast } from './context/ToastContext';
 
 const Home = ({ user, onShowLogin }) => {
+  const { showToast } = useToast();
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -20,6 +24,16 @@ const Home = ({ user, onShowLogin }) => {
   const [bookingStep, setBookingStep] = useState('results'); // results, seats, passenger, payment, confirmation
   const [currentBooking, setCurrentBooking] = useState(null);
   const [bookingRef, setBookingRef] = useState(null);
+
+  const [filters, setFilters] = useState({
+    price: 'all',
+    busTypes: [],
+    departureTimes: [],
+    operators: []
+  });
+
+  // Extract unique bus operators from all loaded schedules
+  const availableOperators = [...new Set(schedules.map(s => s.bus.operatorName))].sort();
 
   useEffect(() => {
     const fetchInitialSchedules = async () => {
@@ -85,12 +99,28 @@ const Home = ({ user, onShowLogin }) => {
       });
       console.log('Current token in localStorage:', localStorage.getItem('token'));
 
-      const response = await bookingService.createBooking({
-        scheduleId: selectedSchedule.id,
-        seatNumbers: selectedSeats,
-        ...passengerData
-      });
-      setCurrentBooking(response.data);
+      if (user.name === 'Demo User') {
+        const mockResponse = {
+          data: {
+            id: 'mock-' + Date.now(),
+            pnr: 'TK' + Math.floor(Math.random() * 900000 + 100000),
+            status: 'PENDING_PAYMENT',
+            passengerName: passengerData.passengerName,
+            passengerPhone: passengerData.passengerPhone,
+            totalAmount: selectedSeats.length * selectedSchedule.fare,
+            seatNumbers: selectedSeats.join(', '),
+            schedule: selectedSchedule
+          }
+        };
+        setCurrentBooking(mockResponse.data);
+      } else {
+        const response = await bookingService.createBooking({
+          scheduleId: selectedSchedule.id,
+          seatNumbers: selectedSeats,
+          ...passengerData
+        });
+        setCurrentBooking(response.data);
+      }
       setBookingStep('payment');
     } catch (error) {
       console.error('Booking failed:', error);
@@ -101,9 +131,65 @@ const Home = ({ user, onShowLogin }) => {
   };
 
   const handlePaymentSuccess = (paymentRecord) => {
+    if (user && user.name === 'Demo User' && currentBooking) {
+      const demoBookings = JSON.parse(localStorage.getItem('demo_bookings') || '[]');
+      const updatedBooking = { ...currentBooking, status: 'CONFIRMED' };
+      demoBookings.unshift(updatedBooking); // Add new booking to the top
+      localStorage.setItem('demo_bookings', JSON.stringify(demoBookings));
+      console.log('[Demo] Booking persisted to localStorage:', updatedBooking.pnr);
+    }
+
     setBookingRef(currentBooking.pnr);
     setBookingStep('confirmation');
+    showToast(`Booking Confirmed! PNR: ${currentBooking.pnr}`, "success");
   };
+
+  const filteredSchedules = schedules.filter(schedule => {
+    // 1. Price Filter
+    if (filters.price !== 'all') {
+      if (filters.price === 'under500' && schedule.fare >= 500) return false;
+      if (filters.price === '500to1000' && (schedule.fare < 500 || schedule.fare > 1000)) return false;
+      if (filters.price === 'over1000' && schedule.fare <= 1000) return false;
+    }
+
+    // 2. Bus Type Filter
+    if (filters.busTypes.length > 0) {
+      const isAc = !schedule.bus.busType.includes('NON_AC');
+      if (filters.busTypes.includes('AC') && !isAc) {
+        if (!filters.busTypes.includes('NON_AC')) return false;
+      }
+      if (filters.busTypes.includes('NON_AC') && isAc) {
+        if (!filters.busTypes.includes('AC')) return false;
+      }
+    }
+
+    // 3. Departure Time Filter
+    if (filters.departureTimes.length > 0) {
+      if (typeof schedule.departureTime === 'string') {
+        const hour = parseInt(schedule.departureTime.split(':')[0], 10);
+        const isMorning = hour >= 6 && hour < 12;
+        const isAfternoon = hour >= 12 && hour < 18;
+        const isEvening = hour >= 18 && hour < 24;
+        const isNight = hour >= 0 && hour < 6;
+
+        const timeMatch = (filters.departureTimes.includes('morning') && isMorning) ||
+          (filters.departureTimes.includes('afternoon') && isAfternoon) ||
+          (filters.departureTimes.includes('evening') && isEvening) ||
+          (filters.departureTimes.includes('night') && isNight);
+
+        if (!timeMatch) return false;
+      }
+    }
+
+    // 4. Operator Filter
+    if (filters.operators.length > 0) {
+      if (!filters.operators.includes(schedule.bus.operatorName)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   if (bookingStep === 'confirmation') {
     return (
@@ -146,20 +232,49 @@ const Home = ({ user, onShowLogin }) => {
                 <p>Finding the best buses for you...</p>
               </div>
             ) : (
-              <div className="results-list">
-                {schedules.map((schedule) => (
-                  <BusCard
-                    key={schedule.id}
-                    schedule={schedule}
-                    onSelect={handleSelectSeats}
+              <div className={`results-wrapper ${searched && schedules.length > 0 ? 'has-filters' : ''}`}>
+
+                {searched && schedules.length > 0 && (
+                  <BusFilters
+                    filters={filters}
+                    setFilters={setFilters}
+                    availableOperators={availableOperators}
                   />
-                ))}
-                {searched && schedules.length === 0 && !loading && (
-                  <div className="no-results card">
-                    <h3>No buses found</h3>
-                    <p>Try searching for different cities or dates</p>
-                  </div>
                 )}
+
+                <div className="results-list">
+                  {filteredSchedules.length > 0 ? (
+                    filteredSchedules.map((schedule) => (
+                      <BusCard
+                        key={schedule.id}
+                        schedule={schedule}
+                        onSelect={handleSelectSeats}
+                      />
+                    ))
+                  ) : (
+                    searched && !loading && (
+                      <div className="no-results card">
+                        <h3>No buses found</h3>
+                        <p>Try adjusting your search filters</p>
+                        {Object.values(filters).some(f => f.length > 0 && f !== 'all') && (
+                          <button
+                            className="btn-text"
+                            style={{ marginTop: '1rem' }}
+                            onClick={() => setFilters({ price: 'all', busTypes: [], departureTimes: [], operators: [] })}
+                          >
+                            Clear Filters
+                          </button>
+                        )}
+                      </div>
+                    )
+                  )}
+                  {searched && schedules.length === 0 && !loading && (
+                    <div className="no-results card">
+                      <h3>No buses found for this route</h3>
+                      <p>Try searching for different cities or dates</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -245,7 +360,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="app-layout dark-theme">
         <nav className="navbar glass">
           <div className="container nav-content">
@@ -256,6 +371,7 @@ function App() {
             <div className="nav-links">
               <Link to="/" className="nav-item">Search</Link>
               <Link to="/bookings" className="nav-item">Bookings</Link>
+              <Link to="/tracking" className="nav-item"><MapPin size={16} /> Track</Link>
               <Link to="/profile" className="nav-item">Profile</Link>
               {user ? (
                 <div className="user-badge">
@@ -278,6 +394,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home user={user} onShowLogin={() => setIsLoginOpen(true)} />} />
             <Route path="/bookings" element={<BookingHistory />} />
+            <Route path="/tracking" element={<LiveTracking />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Armchair, ChevronRight } from 'lucide-react';
 import { busService } from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 const SeatSelection = ({ schedule, onContinue }) => {
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(true);
     const [availability, setAvailability] = useState(null);
     const [selectedSeats, setSelectedSeats] = useState([]);
@@ -25,11 +27,19 @@ const SeatSelection = ({ schedule, onContinue }) => {
     const toggleSeat = (seatId) => {
         if (availability?.bookedSeats.includes(seatId.toString())) return;
 
-        setSelectedSeats(prev =>
-            prev.includes(seatId)
-                ? prev.filter(s => s !== seatId)
-                : [...prev, seatId]
-        );
+        setSelectedSeats(prev => {
+            const isSelected = prev.includes(seatId);
+            if (!isSelected) {
+                if (prev.length >= 6) {
+                    showToast("You can select up to 6 seats only", "warning");
+                    return prev;
+                }
+                showToast(`Seat ${seatId} selected`, "success");
+                return [...prev, seatId];
+            } else {
+                return prev.filter(s => s !== seatId);
+            }
+        });
     };
 
     if (loading) return (

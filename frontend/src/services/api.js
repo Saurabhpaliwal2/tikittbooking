@@ -12,15 +12,20 @@ const api = axios.create({
 // Add JWT token to requests if available
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
+
+    // Auth routes and search routes don't necessarily need a token
+    const isPublicRoute = config.url.includes('/auth/') ||
+        ['/cities', '/schedules', '/buses/search'].some(path => config.url.includes(path));
+
     if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
-        console.log(`[API Request] ${config.method.toUpperCase()} ${config.url} - Token attached`);
-    } else {
-        console.warn(`[API Request] ${config.method.toUpperCase()} ${config.url} - NO token found`);
+    } else if (!isPublicRoute) {
+        // Only warn for protected routes that are missing a token
+        console.warn(`[API Request] ${config.method.toUpperCase()} ${config.url} - Authentication token missing`);
     }
+
     return config;
 }, (error) => {
-    console.error('[API Request Error]', error);
     return Promise.reject(error);
 });
 

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { CreditCard, ShieldCheck, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { paymentService } from '../services/api';
 import PaymentLogo from './PaymentLogo';
+import { useToast } from '../context/ToastContext';
 
 const PaymentScreen = ({ booking, onPaymentSuccess, onBack }) => {
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [order, setOrder] = useState(null);
     const [error, setError] = useState(null);
@@ -12,8 +14,14 @@ const PaymentScreen = ({ booking, onPaymentSuccess, onBack }) => {
         const initPayment = async () => {
             setLoading(true);
             try {
-                const response = await paymentService.createOrder(booking.id);
-                setOrder(response.data);
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (user && user.name === 'Demo User') {
+                    console.log('[Demo] Initializing mock payment order');
+                    setOrder({ orderId: 'mock-order-' + Date.now() });
+                } else {
+                    const response = await paymentService.createOrder(booking.id);
+                    setOrder(response.data);
+                }
             } catch (err) {
                 console.error('Failed to create payment order:', err);
                 setError('Failed to initialize payment. Please try again.');
@@ -31,12 +39,21 @@ const PaymentScreen = ({ booking, onPaymentSuccess, onBack }) => {
         setLoading(true);
         setError(null);
         try {
-            // Simulating a dummy "SUCCESS" payment verification
-            const response = await paymentService.verifyPayment({
-                orderId: order.orderId,
-                status: 'SUCCESS'
-            });
-            onPaymentSuccess(response.data);
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user && user.name === 'Demo User') {
+                console.log('[Demo] Verifying mock payment');
+                // Artificial delay for realism
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                onPaymentSuccess({ status: 'SUCCESS' });
+                showToast("Payment Processed Successfully!", "success");
+            } else {
+                const response = await paymentService.verifyPayment({
+                    orderId: order.orderId,
+                    status: 'SUCCESS'
+                });
+                onPaymentSuccess(response.data);
+                showToast("Payment Verified!", "success");
+            }
         } catch (err) {
             console.error('Payment verification failed:', err);
             setError('Payment verification failed. Please try again.');
