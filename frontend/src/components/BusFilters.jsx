@@ -7,6 +7,10 @@ const BusFilters = ({ filters, setFilters, availableOperators = [] }) => {
         setFilters(prev => ({ ...prev, price: value }));
     };
 
+    const handleSortChange = (value) => {
+        setFilters(prev => ({ ...prev, sortBy: value }));
+    };
+
     const handleBusTypeToggle = (type) => {
         setFilters(prev => {
             const types = prev.busTypes.includes(type)
@@ -39,11 +43,12 @@ const BusFilters = ({ filters, setFilters, availableOperators = [] }) => {
             price: 'all',
             busTypes: [],
             departureTimes: [],
-            operators: []
+            operators: [],
+            sortBy: 'time_asc'
         });
     };
 
-    const activeFilterCount = (filters.price !== 'all' ? 1 : 0) + filters.busTypes.length + filters.departureTimes.length + filters.operators.length;
+    const activeFilterCount = (filters.price !== 'all' ? 1 : 0) + filters.busTypes.length + filters.departureTimes.length + filters.operators.length + (filters.sortBy !== 'time_asc' ? 1 : 0);
 
     return (
         <aside className="filters-sidebar card glass animate-fade-in">
@@ -61,6 +66,54 @@ const BusFilters = ({ filters, setFilters, availableOperators = [] }) => {
                     </button>
                 )}
             </div>
+
+            <div className="filter-section">
+                <h4>Sort By</h4>
+                <div className="filter-options">
+                    <label className="radio-label">
+                        <input
+                            type="radio"
+                            name="sort"
+                            checked={filters.sortBy === 'time_asc'}
+                            onChange={() => handleSortChange('time_asc')}
+                        />
+                        <span className="radio-custom"></span>
+                        Earliest Departure
+                    </label>
+                    <label className="radio-label">
+                        <input
+                            type="radio"
+                            name="sort"
+                            checked={filters.sortBy === 'time_desc'}
+                            onChange={() => handleSortChange('time_desc')}
+                        />
+                        <span className="radio-custom"></span>
+                        Latest Departure
+                    </label>
+                    <label className="radio-label">
+                        <input
+                            type="radio"
+                            name="sort"
+                            checked={filters.sortBy === 'price_asc'}
+                            onChange={() => handleSortChange('price_asc')}
+                        />
+                        <span className="radio-custom"></span>
+                        Lowest Price
+                    </label>
+                    <label className="radio-label">
+                        <input
+                            type="radio"
+                            name="sort"
+                            checked={filters.sortBy === 'price_desc'}
+                            onChange={() => handleSortChange('price_desc')}
+                        />
+                        <span className="radio-custom"></span>
+                        Highest Price
+                    </label>
+                </div>
+            </div>
+
+            <hr className="filter-divider" />
 
             <div className="filter-section">
                 <h4>Price</h4>

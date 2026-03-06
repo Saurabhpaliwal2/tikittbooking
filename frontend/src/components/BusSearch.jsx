@@ -118,10 +118,15 @@ const BusSearch = ({ onSearch }) => {
                     />
                 </div>
 
-                <button type="submit" className="btn-primary search-btn">
-                    <Search size={20} />
-                    <span>FIND BUSES</span>
-                </button>
+                <div className="search-actions" style={{ display: 'flex', gap: '10px' }}>
+                    <button type="button" className="btn-secondary search-btn" onClick={() => onSearch({ showAll: true })}>
+                        <span>SHOW ALL</span>
+                    </button>
+                    <button type="submit" className="btn-primary search-btn">
+                        <Search size={20} />
+                        <span>FIND BUSES</span>
+                    </button>
+                </div>
             </form>
         </div>
     );

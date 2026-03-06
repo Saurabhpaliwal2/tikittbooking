@@ -29,7 +29,8 @@ const Home = ({ user, onShowLogin }) => {
     price: 'all',
     busTypes: [],
     departureTimes: [],
-    operators: []
+    operators: [],
+    sortBy: 'time_asc'
   });
 
   // Extract unique bus operators from all loaded schedules
@@ -57,11 +58,16 @@ const Home = ({ user, onShowLogin }) => {
     setSelectedSchedule(null);
     setBookingStep('results');
     try {
-      const response = await busService.searchBuses({
-        from: params.from,
-        to: params.to,
-        date: params.date
-      });
+      let response;
+      if (params.showAll) {
+        response = await busService.getAllSchedules();
+      } else {
+        response = await busService.searchBuses({
+          from: params.from,
+          to: params.to,
+          date: params.date
+        });
+      }
       setSchedules(response.data);
     } catch (error) {
       console.error('Error searching buses:', error);
@@ -191,6 +197,20 @@ const Home = ({ user, onShowLogin }) => {
     return true;
   });
 
+  const sortedAndFilteredSchedules = [...filteredSchedules].sort((a, b) => {
+    switch (filters.sortBy) {
+      case 'time_desc':
+        return b.departureTime.localeCompare(a.departureTime);
+      case 'price_asc':
+        return a.fare - b.fare;
+      case 'price_desc':
+        return b.fare - a.fare;
+      case 'time_asc':
+      default:
+        return a.departureTime.localeCompare(b.departureTime);
+    }
+  });
+
   if (bookingStep === 'confirmation') {
     return (
       <div className="container confirmation-view animate-fade-in card glass">
@@ -243,8 +263,8 @@ const Home = ({ user, onShowLogin }) => {
                 )}
 
                 <div className="results-list">
-                  {filteredSchedules.length > 0 ? (
-                    filteredSchedules.map((schedule) => (
+                  {sortedAndFilteredSchedules.length > 0 ? (
+                    sortedAndFilteredSchedules.map((schedule) => (
                       <BusCard
                         key={schedule.id}
                         schedule={schedule}
