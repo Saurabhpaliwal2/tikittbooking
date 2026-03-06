@@ -88,6 +88,10 @@ public class DataSeeder implements CommandLineRunner {
                         routeRepository.save(new Route(null, "Bangalore", "Hyderabad", 570, "8h 30m"));
                         routeRepository.save(new Route(null, "Chennai", "Bangalore", 346, "5h 30m"));
                         routeRepository.save(new Route(null, "Bangalore", "Chennai", 346, "5h 30m"));
+                        routeRepository.save(new Route(null, "Hyderabad", "Chennai", 627, "10h 00m"));
+                        routeRepository.save(new Route(null, "Chennai", "Hyderabad", 627, "10h 01m"));
+                        routeRepository.save(new Route(null, "Mumbai", "Bangalore", 984, "15h 00m"));
+                        routeRepository.save(new Route(null, "Bangalore", "Mumbai", 984, "15h 00m"));
                 }
         }
 
