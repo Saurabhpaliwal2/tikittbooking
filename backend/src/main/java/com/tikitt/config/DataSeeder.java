@@ -101,8 +101,8 @@ public class DataSeeder implements CommandLineRunner {
                                 return;
 
                         for (Route route : routes) {
-                                // Seed 3 days for each route
-                                for (int day = 0; day <= 3; day++) {
+                                // Seed 30 days for each route to ensure results are always available
+                                for (int day = 0; day <= 30; day++) {
                                         LocalDate date = today.plusDays(day);
 
                                         // Morning Bus
