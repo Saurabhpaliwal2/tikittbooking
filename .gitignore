@@ -38,3 +38,10 @@ Thumbs.db
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Database & Logs
+backend/data/
+**/data/
+*.db
+backend/logs/
+**/logs/
