@@ -48,6 +48,8 @@ select {
   border-radius: var(--radius);
   padding: 0.75rem 1rem;
   outline: none;
+  background-color: black;
+  color: white;
   transition: border-color 0.2s;
 }
 

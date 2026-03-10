@@ -11,6 +11,7 @@ import BookingHistory from './components/BookingHistory';
 import LiveTracking from './components/LiveTracking';
 import BusFilters from './components/BusFilters';
 import LoginRegistry from './components/LoginRegistry';
+import Chatbot from './components/Chatbot';
 import './App.css';
 import { useToast } from './context/ToastContext';
 
@@ -430,6 +431,8 @@ function App() {
             <p>&copy; 2026 Tikitt Booking. All rights reserved.</p>
           </div>
         </footer>
+
+        <Chatbot user={user} onShowLogin={() => setIsLoginOpen(true)} />
       </div>
     </Router>
   );
