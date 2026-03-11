@@ -13,7 +13,11 @@ const faqData = {
     "Is my journey safe?": "Yes! All our partner buses are GPS-tracked, regularly serviced, and driven by verified, licensed drivers. We also offer 24/7 customer support for emergencies.",
     "Group Booking Discounts?": "We offer special discounts for groups of 10 or more passengers. Please contact our support team at support@tikitt.com to get a custom quote.",
     "Can I reschedule my ticket?": "Rescheduling is currently not supported directly from the app. Please cancel your current booking and re-book for the new date. Cancellation charges may apply.",
-    "What if my bus is late?": "In case of delays, our support team is available 24/7. Significant delays (2+ hours) may qualify for partial compensation — please contact support with your PNR."
+    "What if my bus is late?": "In case of delays, our support team is available 24/7. Significant delays (2+ hours) may qualify for partial compensation — please contact support with your PNR.",
+    "Why can't I see any buses?": "This could be due to a poor connection or no buses available for your chosen route/date. Try clearing filters or searching for a different date.",
+    "Payment failed but money deducted?": "Don't worry! Usually, it's a temporary hold. If a ticket isn't generated, the amount is automatically refunded within 5-7 business days. Contact support with your transaction ID.",
+    "Ticket not received in email?": "Check your 'My Bookings' section first. All confirmed tickets are stored there. If it's missing, contact our support team immediately.",
+    "How to report feedback for a bus?": "After your journey, you can rate the bus and leave feedback directly from the 'My Bookings' page for that specific trip."
 };
 
 const Chatbot = () => {
