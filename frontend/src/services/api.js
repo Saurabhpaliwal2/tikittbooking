@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { mockSchedules, mockCities } from './mockData';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
 
@@ -47,13 +48,13 @@ export const authService = {
 };
 
 export const busService = {
-    searchBuses: (params) => api.get('/buses/search', { params }),
-    getBuses: () => api.get('/buses'),
-    getCities: () => api.get('/cities'),
-    getRoutes: () => api.get('/routes'),
-    getAllSchedules: () => api.get('/schedules'),
-    getSchedules: (routeId, date) => api.get(`/schedules/route/${routeId}`, { params: { date } }),
-    getSeatAvailability: (id) => api.get(`/schedules/${id}/seats`),
+    searchBuses: (params) => api.get('/buses/search', { params }).catch(() => ({ data: mockSchedules })),
+    getBuses: () => api.get('/buses').catch(() => ({ data: [] })),
+    getCities: () => api.get('/cities').catch(() => ({ data: mockCities })),
+    getRoutes: () => api.get('/routes').catch(() => ({ data: [] })),
+    getAllSchedules: () => api.get('/schedules').catch(() => ({ data: mockSchedules })),
+    getSchedules: (routeId, date) => api.get(`/schedules/route/${routeId}`, { params: { date } }).catch(() => ({ data: mockSchedules })),
+    getSeatAvailability: (id) => api.get(`/schedules/${id}/seats`).catch(() => ({ data: [] })),
 };
 
 export const bookingService = {
