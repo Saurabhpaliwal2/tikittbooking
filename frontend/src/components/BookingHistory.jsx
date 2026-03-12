@@ -41,6 +41,21 @@ const BookingHistory = () => {
         }, 500);
     };
 
+    const handleCancelBooking = async (id) => {
+        if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+        
+        try {
+            await bookingService.cancelBooking(id);
+            // Refresh bookings after cancellation
+            const response = await bookingService.getMyBookings();
+            setBookings(response.data);
+            alert('Booking cancelled successfully');
+        } catch (err) {
+            console.error('Error cancelling booking:', err);
+            alert('Failed to cancel booking. Please try again.');
+        }
+    };
+
     if (loading) {
         return (
             <div className="loading-state container">
@@ -132,12 +147,21 @@ const BookingHistory = () => {
                                     <span>{booking.passengerPhone}</span>
                                 </div>
                                 {booking.status === 'CONFIRMED' && (
-                                    <button
-                                        className="btn-outline btn-sm"
-                                        onClick={() => handleDownloadTicket(booking)}
-                                    >
-                                        Download Ticket
-                                    </button>
+                                    <div className="footer-actions">
+                                        <button
+                                            className="btn-outline btn-sm"
+                                            onClick={() => handleDownloadTicket(booking)}
+                                        >
+                                            Download Ticket
+                                        </button>
+                                        <button
+                                            className="btn-delete btn-sm"
+                                            onClick={() => handleCancelBooking(booking.id)}
+                                            style={{ marginLeft: '1rem', color: '#ff4d4f', borderColor: '#ff4d4f' }}
+                                        >
+                                            Cancel Booking
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
